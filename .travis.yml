@@ -1,12 +1,16 @@
 matrix:
   include:
     - os: windows
+      language: node_js
+      node_js: "10"
     - os: osx
       osx_image: xcode10.2
       language: node_js
       node_js: "10"
     - os: linux
       services: docker
+      language: node_js
+      node_js: "10"
       language: generic
 
 cache:
