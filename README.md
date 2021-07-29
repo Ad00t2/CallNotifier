@@ -1,6 +1,6 @@
 <div align="center">
-  <a href="https://travis-ci.com/github/Ad00t/CallNotifier">
-    <img alt="Build Status" src="https://travis-ci.com/Hyperion-9614/UltimateGoal.svg?token=mfjmzBAuLfxQsS9xKwRc&branch=master">
+  <a href="https://travis-ci.com/Ad00t/CallNotifier.svg?branch=master">
+    <img alt="Build Status" src="https://travis-ci.com/Ad00t/CallNotifier.svg?branch=master">
   </a>
 
   <br>
