@@ -42,12 +42,12 @@ before_install:
 before_script:
   - git lfs pull
 
-# on PRs and merges to master and prod run tests and build the app
+# on pull requests and merges to master and prod run tests and build the app
 script:
   - |
     if [ "$TRAVIS_OS_NAME" == "linux" ]; then
       docker run --rm \
-        -v ${PWD}:/project \
+        -v PWD:/project \
         -v ~/.cache/electron:/root/.cache/electron \
         -v ~/.cache/electron-builder:/root/.cache/electron-builder \
         electronuserland/builder:wine \
@@ -56,7 +56,7 @@ script:
       yarn test
     fi
 
-# only deploy to github on a merge to the prod branch
+# only deploy to github on a merge to the master branch
 deploy:
   provider: script
   script: bash deploy.travis.sh
@@ -67,8 +67,7 @@ deploy:
 before_cache:
   - rm -rf $HOME/.cache/electron-builder/wine
 
-# only run this script on pull requests and merges into
-# the 'master' and 'prod' branches
+# only run this script on pull requests and merges into the 'master' branch
 branches:
   only:
   - master

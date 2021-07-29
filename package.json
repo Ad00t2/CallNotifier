@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "description": "Cross-platform desktop SIP client application built on electron-react.",
   "repository": "https://github.com/Ad00t/CallNotifier",
+  "author": "Ad00t",
   "scripts": {
     "build": "concurrently \"yarn build:main\" \"yarn build:renderer\"",
     "build:main": "cross-env NODE_ENV=production webpack --config ./.erb/configs/webpack.config.main.prod.babel.js",
@@ -35,25 +36,6 @@
     "productName": "CallNotifier",
     "appId": "com.adoot.CallNotifier",
     "publish": "github",
-    "files": [
-      "dist/",
-      "node_modules/",
-      "index.html",
-      "main.prod.js",
-      "main.prod.js.map",
-      "package.json"
-    ],
-    "afterSign": ".erb/scripts/Notarize.js",
-    "mac": {
-      "target": [
-        "dmg"
-      ],
-      "type": "distribution",
-      "hardenedRuntime": true,
-      "entitlements": "assets/entitlements.mac.plist",
-      "entitlementsInherit": "assets/entitlements.mac.plist",
-      "gatekeeperAssess": false
-    },
     "dmg": {
       "contents": [
         {
@@ -77,16 +59,11 @@
     },
     "directories": {
       "app": "src",
-      "buildResources": "assets",
-      "output": "dist"
+      "buildResources": "assets"
     },
     "extraResources": [
       "./assets/**"
     ]
-  },
-  "author": {
-    "name": "Adhit Siripurapu",
-    "email": "adhit.sirip@gmail.com"
   },
   "contributors": [
     {
