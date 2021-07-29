@@ -2,17 +2,14 @@
   "name": "call-notifier",
   "productName": "CallNotifier",
   "version": "1.0.0",
-  "description": "Cross-platform desktop SIP client application",
+  "description": "Cross-platform desktop SIP client application built on electron-react.",
   "scripts": {
     "build": "concurrently \"yarn build:main\" \"yarn build:renderer\"",
     "build:main": "cross-env NODE_ENV=production webpack --config ./.erb/configs/webpack.config.main.prod.babel.js",
     "build:renderer": "cross-env NODE_ENV=production webpack --config ./.erb/configs/webpack.config.renderer.prod.babel.js",
     "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir src",
     "lint": "cross-env NODE_ENV=development eslint . --cache --ext .js,.jsx,.ts,.tsx",
-    "packageAll": "yarn build && electron-builder -mwl --publish never",
-    "packageWindows": "yarn build && electron-builder -w --publish never",
-    "packageMac": "yarn build && electron-builder -m --publish never",
-    "packageLinux": "yarn build && electron-builder -l --publish never",
+    "release": "yarn build && electron-builder --publish never",
     "postinstall": "node -r @babel/register .erb/scripts/CheckNativeDep.js && electron-builder install-app-deps && yarn cross-env NODE_ENV=development webpack --config ./.erb/configs/webpack.config.renderer.dev.dll.babel.js && opencollective-postinstall && yarn-deduplicate yarn.lock",
     "start": "node -r @babel/register ./.erb/scripts/CheckPortInUse.js && yarn start:renderer",
     "start:main": "cross-env NODE_ENV=development electron -r ./.erb/scripts/BabelRegister ./src/main.dev.ts",
@@ -58,32 +55,28 @@
     "dmg": {
       "contents": [
         {
-          "x": 130,
-          "y": 220
+          "x": 110,
+          "y": 150
         },
         {
-          "x": 410,
-          "y": 220,
+          "x": 240,
+          "y": 150,
           "type": "link",
           "path": "/Applications"
         }
       ]
     },
-    "win": {
-      "target": [
-        "nsis"
-      ]
+    "appImage": {
+      "license": "LICENSE"
     },
-    "linux": {
-      "target": [
-        "AppImage"
-      ],
-      "category": "Development"
+    "nsis": {
+      "createDesktopShortcut": "always",
+      "license": "LICENSE"
     },
     "directories": {
       "app": "src",
       "buildResources": "assets",
-      "output": "release"
+      "output": "dist"
     },
     "extraResources": [
       "./assets/**"
@@ -241,7 +234,6 @@
     "history": "^5.0.0",
     "husky": "^7.0.1",
     "moment": "2.29.1",
-    "node-sass": "^4.14.0",
     "nouislider": "15.1.0",
     "prop-types": "15.7.2",
     "randomstring": "^1.2.1",
