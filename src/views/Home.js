@@ -15,24 +15,24 @@ import CloudUpload from "@material-ui/icons/CloudUpload";
 import CloudDownload from "@material-ui/icons/CloudDownload";
 
 // core components
-import Header from "components/Header/Header.js";
-import Footer from "components/Footer/Footer.js";
-import GridContainer from "components/Grid/GridContainer.js";
-import GridItem from "components/Grid/GridItem.js";
-import Button from "components/CustomButtons/Button.js";
-import Badge from 'components/Badge/Badge.js';
-import Card from "components/Card/Card.js";
-import CardHeader from "components/Card/CardHeader.js";
-import CardBody from "components/Card/CardBody.js";
-import Muted from "components/Typography/Muted.js";
+import Header from "../components/Header/Header";
+import Footer from "../components/Footer/Footer";
+import GridContainer from "../components/Grid/GridContainer";
+import GridItem from "../components/Grid/GridItem";
+import Button from "../components/CustomButtons/Button";
+import Badge from "../components/Badge/Badge";
+import Card from "../components/Card/Card";
+import CardHeader from "../components/Card/CardHeader";
+import CardBody from "../components/Card/CardBody";
+import Muted from "../components/Typography/Muted";
 import ClipLoader from "react-spinners/ClipLoader";
 
 // styles
-import pageStyles from "assets/jss/material-kit-react/views/landingPage.js";
-import typeStyles from "assets/jss/material-kit-react/components/typographyStyle.js";
+import pageStyles from "../assets/jss/material-kit-react/views/landingPage";
+import typeStyles from "../assets/jss/material-kit-react/components/typographyStyle";
 
 // assets
-import { primaryColor, infoColor, successColor, roseColor, warningColor, dangerColor } from "assets/jss/material-kit-react.js";
+import { primaryColor, infoColor, successColor, roseColor, warningColor, dangerColor } from "../assets/jss/material-kit-react";
 
 // CallNotifier
 import * as SIP from "../sip/SIP";

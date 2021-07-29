@@ -20,24 +20,24 @@ import FiberManualRecord from "@material-ui/icons/FiberManualRecord";
 import Fingerprint from "@material-ui/icons/Fingerprint";
 
 // components
-import GridContainer from "components/Grid/GridContainer.js";
-import GridItem from "components/Grid/GridItem.js";
-import Button from "components/CustomButtons/Button.js";
-import Badge from 'components/Badge/Badge.js';
-import Card from "components/Card/Card.js";
-import CardBody from "components/Card/CardBody.js";
-import CardHeader from "components/Card/CardHeader.js";
-import CardFooter from "components/Card/CardFooter.js";
-import CustomInput from "components/CustomInput/CustomInput.js";
+import GridContainer from "../components/Grid/GridContainer";
+import GridItem from "../components/Grid/GridItem";
+import Button from "../components/CustomButtons/Button";
+import Badge from "../components/Badge/Badge";
+import Card from "../components/Card/Card";
+import CardBody from "../components/Card/CardBody";
+import CardHeader from "../components/Card/CardHeader";
+import CardFooter from "../components/Card/CardFooter";
+import CustomInput from "../components/CustomInput/CustomInput";
 import ClipLoader from "react-spinners/ClipLoader";
 
 // styles
-import pageStyles from "assets/jss/material-kit-react/views/loginPage.js";
-import crsStyles from "assets/jss/material-kit-react/customCheckboxRadioSwitch.js";
+import pageStyles from "../assets/jss/material-kit-react/views/loginPage";
+import crsStyles from "../assets/jss/material-kit-react/customCheckboxRadioSwitch";
 
 // assets
-import { primaryColor } from "assets/jss/material-kit-react.js";
-import image from "assets/img/bg7.jpg";
+import { primaryColor } from "../assets/jss/material-kit-react";
+import image from "../assets/img/bg7.jpg";
 
 // CallNotifier
 import * as SIP from "../sip/SIP";
@@ -49,7 +49,7 @@ export default function SipRegister({ setIsRegistered }) {
   const pageClasses = makeStyles(pageStyles)();
   const crsClasses = makeStyles(crsStyles)();
   const history = useHistory();
-  
+
   const [loading, setLoading] = React.useState(false);
   const [regPhase, setRegPhase] = React.useState(0);
 
