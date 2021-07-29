@@ -4,10 +4,7 @@
   "version": "1.0.0",
   "description": "Cross-platform desktop SIP client application built on electron-react-boilerplate.",
   "main": "./main.prod.js",
-  "author": {
-    "name": "Adhit Siripurapu",
-    "email": "adhit.sirip@gmail.com"
-  },
+  "author": "Ad00t",
   "scripts": {
     "electron-rebuild": "node -r ../.erb/scripts/BabelRegister.js ../.erb/scripts/ElectronRebuild.js",
     "postinstall": "yarn electron-rebuild"

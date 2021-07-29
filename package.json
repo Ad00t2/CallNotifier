@@ -34,7 +34,7 @@
   },
   "build": {
     "productName": "CallNotifier",
-    "appId": "com.adoot.CallNotifier",
+    "appId": "com.adoot.callnotifier",
     "publish": "github",
     "dmg": {
       "contents": [
