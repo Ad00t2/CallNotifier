@@ -2,7 +2,7 @@
   "name": "call-notifier",
   "productName": "CallNotifier",
   "version": "1.0.0",
-  "description": "Cross-platform desktop SIP client application built on electron-react.",
+  "description": "Cross-platform desktop SIP client application built on electron-react-boilerplate.",
   "main": "./main.prod.js",
   "author": {
     "name": "Adhit Siripurapu",
