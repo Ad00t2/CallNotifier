@@ -51,3 +51,6 @@ npm-debug.log.*
 
 package-lock.json
 src/package-lock.json
+
+# IDE generated
+.vscode
