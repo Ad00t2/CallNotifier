@@ -4,7 +4,8 @@ import {
   dangerCardHeader,
   infoCardHeader,
   primaryCardHeader,
-} from "assets/jss/material-kit-react.js";
+} from "../../material-kit-react";
+
 const cardHeaderStyle = {
   cardHeader: {
     borderRadius: "3px",
