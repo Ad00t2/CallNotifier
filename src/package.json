@@ -1,7 +1,7 @@
 {
   "name": "call-notifier",
   "productName": "CallNotifier",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Cross-platform desktop SIP client application built on electron-react-boilerplate.",
   "main": "./main.prod.js",
   "author": "Ad00t",
