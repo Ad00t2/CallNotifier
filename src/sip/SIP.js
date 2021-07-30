@@ -15,7 +15,7 @@ const randString = require('randomstring');
 var UA;
 var isStarted = false;
 var sipClient;
-export const sipLog = [];
+const sipLog = [];
 
 function onBye(req, remote) {
   sipClient.send(sip.makeResponse(req, 200, 'OK'));
@@ -65,12 +65,21 @@ function setProtocolOptions(options, protocol) {
     options.tls = {};
 }
 
+var sipLogCallback = (sipLog) => {};
+
 function addSipLogEntry(message, address, isSend) {
   sipLog.unshift({ "id": randString.generate(8), "message": message, "address": address, "time": Date.now(), "isSend": isSend });
+  sipLogCallback(sipLog);
 }
 
 function clearSipLog() {
   sipLog.length = 0;
+  sipLogCallback(sipLog);
+}
+
+export function setSipLogCallback(callback) {
+  sipLogCallback = callback;
+  sipLogCallback(sipLog);
 }
 
 export function init(domain, proxy, tlsAddress, user, protocol) {
