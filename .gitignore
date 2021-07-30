@@ -31,14 +31,13 @@ node_modules
 .DS_Store
 
 # App packaged
-release
+dist
 src/main.prod.js
 src/main.prod.js.map
 src/renderer.prod.js
 src/renderer.prod.js.map
 src/style.css
 src/style.css.map
-dist
 dll
 main.js
 main.js.map
@@ -49,8 +48,8 @@ npm-debug.log.*
 *.sass.d.ts
 *.scss.d.ts
 
-package-lock.json
-src/package-lock.json
+yarn.lock
+src/yarn.lock
 
 # IDE generated
 .vscode
