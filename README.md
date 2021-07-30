@@ -1,6 +1,6 @@
 <div align="center">
-  <a href="https://travis-ci.com/Ad00t/CallNotifier">
-    <img alt="Build Status" src="https://travis-ci.com/Ad00t/CallNotifier.svg?branch=prod">
+  <a href="https://travis-ci.com/Ad00t2/CallNotifier">
+    <img alt="Build Status" src="https://travis-ci.com/Ad00t2/CallNotifier.svg?branch=prod">
   </a>
 
   <br>
