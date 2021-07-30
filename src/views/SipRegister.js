@@ -44,8 +44,6 @@ import * as SIP from "../sip/SIP";
 import { getRegister, setRegister } from "../config/config";
 
 export default function SipRegister({ setIsRegistered }) {
-  const [cardAnimation, setCardAnimation] = React.useState('cardHidden');
-  setTimeout(() => { setCardAnimation(''); }, 100);
   const pageClasses = makeStyles(pageStyles)();
   const crsClasses = makeStyles(crsStyles)();
   const history = useHistory();
@@ -118,7 +116,7 @@ export default function SipRegister({ setIsRegistered }) {
     <div className={pageClasses.container}>
       <GridContainer justify="center">
         <GridItem xs={10} sm={7} style={{ minWidth: "25em" }}>
-          <Card className={pageClasses[cardAnimation]} style={{ minHeight: "20em" }}>
+          <Card style={{ minHeight: "20em" }}>
             <CardHeader className={pageClasses.cardHeader} color="primary">
               <h1>SIP Register</h1>
             </CardHeader>

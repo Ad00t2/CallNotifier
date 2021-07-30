@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-import React from "react";
+import React, { useState, useEffect } from 'react';
 import { useHistory } from "react-router-dom";
 
 // nodejs library that concatenates classes
@@ -38,8 +38,6 @@ import { primaryColor, infoColor, successColor, roseColor, warningColor, dangerC
 import * as SIP from "../sip/SIP";
 
 function LogEntry({ entry }) {
-  const [cardAnimaton, setCardAnimation] = React.useState('cardHidden');
-  setTimeout(() => { setCardAnimation(''); }, 100);
   const pageClasses = makeStyles(pageStyles)();
   const reqResIconClasses = makeStyles(theme => ({
     reqResIcon: {
@@ -59,11 +57,15 @@ function LogEntry({ entry }) {
       title={`Message: ${JSON.stringify(entry.message)}`}
     >
       <CardBody>
+        <InputAdornment className={reqResIconClasses.reqResIcon}>
+          { (entry.isSend) ?
+            <CloudUpload style={{ color: (entry.isSend ? roseColor : warningColor) }} />
+            :
+            <CloudDownload style={{ color: (entry.isSend ? roseColor : warningColor) }} />
+          }
+        </InputAdornment>
         { (isReq(entry)) ?
           <div id="requestInfo">
-            <InputAdornment className={reqResIconClasses.reqResIcon}>
-              <CloudUpload style={{ color: (entry.isSend ? roseColor : warningColor) }} />
-            </InputAdornment>
             <h3 style={{ color: primaryColor, display: "inline" }}>Request&emsp;</h3>
             <h4 style={{ display: "inline" }}>
                 { `${entry.message.headers.expires === 0 ? '(UN)' : ''}${entry.message.method} - #${entry.message.headers.cseq.seq}` }
@@ -74,9 +76,6 @@ function LogEntry({ entry }) {
           </div>
           :
           <div id="responseInfo">
-            <InputAdornment className={reqResIconClasses.reqResIcon}>
-              <CloudDownload style={{ color: (entry.isSend ? roseColor : warningColor) }} />
-            </InputAdornment>
             <h3 style={{ color: infoColor, display: "inline" }}>Response&emsp;</h3>
             <h4 style={{ color: (entry.message.status == 200 ? successColor : dangerColor), display: "inline" }}>
               { `${entry.message.status} - "${entry.message.reason}"` }
@@ -102,7 +101,7 @@ function LogEntry({ entry }) {
   );
 }
 
-function SipLog({ log }) {
+function SipLog({ sipLog }) {
   return (
     <div
       style={{
@@ -113,7 +112,7 @@ function SipLog({ log }) {
       }}
     >
       {
-        log.map((entry) => {
+        sipLog.map((entry) => {
           return (<LogEntry key={entry.id} entry={entry} />);
         })
       }
@@ -122,13 +121,16 @@ function SipLog({ log }) {
 }
 
 export default function Home({ isRegistered }) {
-  const [cardAnimaton, setCardAnimation] = React.useState('cardHidden');
-  setTimeout(() => { setCardAnimation(''); }, 500);
   const pageClasses = makeStyles(pageStyles)();
   const history = useHistory();
 
-  const [loading, setLoading] = React.useState(false);
-  const [log, setLog] = React.useState(SIP.sipLog);
+  const [loading, setLoading] = useState(false);
+  const [sipLog, setSipLog] = useState([]);
+
+  useEffect(() => {
+    SIP.setSipLogCallback((log) => { setSipLog([ ...log ]); });
+    return () => SIP.setSipLogCallback((log) => { });
+  }, []);
 
   function unRegister() {
     setLoading(true);
@@ -165,7 +167,20 @@ export default function Home({ isRegistered }) {
         </div>
         </div>
         { (!loading) &&
-          <SipLog log={log} />
+          <div
+            style={{
+              margin: "5em auto",
+              overflow: "auto",
+              width: "70vw",
+              maxHeight: "75vh"
+            }}
+          >
+            {
+              sipLog.map((entry) => {
+                return (<LogEntry key={entry.id} entry={entry} />);
+              })
+            }
+          </div>
         }
       </CardBody>
     </Card>
