@@ -52,7 +52,7 @@ function addSipLogEntry(message, address, isSend) {
   sipLogCallback(sipLog);
 }
 
-export function clearSipLog() {
+function clearSipLog() {
   sipLog.length = 0;
   sipLogCallback(sipLog);
 }
@@ -173,6 +173,8 @@ export function unRegister(callback) {
 }
 
 export function stop() {
-  if (sipClient && isStarted)
+  if (sipClient && isStarted) {
     sipClient.stop();
+    isStarted = false;
+  }
 }

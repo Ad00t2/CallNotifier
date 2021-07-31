@@ -73,18 +73,19 @@ export default function SipRegister({ isRegistered }) {
 
   function toHome(regRes) {
     SIP.setIsRegistered(true);
+    const expiresMs = parseInt(regRes.headers.expires) * 1000;
     setInterval(() => {
-      if (!isRegistered) {
-        SIP.unRegister(res => {
-          SIP.register(null, res => {
-            SIP.register(SIP.getUA().auth.password, res => {
-              if (res.status >= 200 && res.status < 300) SIP.setIsRegistered(true);
-              else if (res.status >= 300) { SIP.stop(); history.push('/'); }
-            });
+        SIP.register(null, res => {
+          SIP.register(SIP.getUA().auth.password, res => {
+            if (res.status >= 300) {
+              SIP.setIsRegistered(false);
+              setErrorMsg('Automatic SIP re-registration failed. Please register manually.');
+              SIP.stop();
+              history.push('/');
+            }
           });
         });
-      }
-    }, Math.round(((5.0 / 6) * parseInt(regRes.headers.expires)) * 1000));
+    }, Math.round((5.0 / 6) * expiresMs));
     history.push('/home');
   }
 
