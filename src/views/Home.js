@@ -103,7 +103,7 @@ function LogEntry({ entry, i }) {
   );
 }
 
-export default function Home({ isRegistered }) {
+export default function Home({}) {
   const pageClasses = makeStyles(pageStyles)();
   const history = useHistory();
 

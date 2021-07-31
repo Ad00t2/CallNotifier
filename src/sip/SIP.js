@@ -52,7 +52,7 @@ function addSipLogEntry(message, address, isSend) {
   sipLogCallback(sipLog);
 }
 
-function clearSipLog() {
+export function clearSipLog() {
   sipLog.length = 0;
   sipLogCallback(sipLog);
 }
@@ -119,15 +119,12 @@ export function getUA() {
   return UA;
 }
 
-var isRegisteredCallback = (isReg) => {};
-
-export function setIsRegisteredCallback(callback) {
-  isRegisteredCallback = callback;
-}
-
 export function setIsRegistered(pIsRegistered) {
   isRegistered = pIsRegistered;
-  isRegisteredCallback(isRegistered);
+}
+
+export function getIsRegistered() {
+  return isRegistered;
 }
 
 var challengeRes = {}; var regCseq = 0;
@@ -163,6 +160,11 @@ export function register(password, callback) {
   sendRegister(password, false, callback);
 }
 
+var reRegisterInterval;
+export function setReRegisterInterval(pReRegisterInterval) {
+  reRegisterInterval = pReRegisterInterval;
+}
+
 export function unRegister(callback) {
   sendRegister(null, true, res => {
     sendRegister(UA.auth.password, true, res => {
@@ -174,6 +176,10 @@ export function unRegister(callback) {
 
 export function stop() {
   if (sipClient && isStarted) {
+    if (reRegisterInterval != null) {
+      clearInterval(reRegisterInterval);
+      reRegisterInterval = null;
+    }
     sipClient.stop();
     isStarted = false;
   }

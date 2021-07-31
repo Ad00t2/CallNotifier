@@ -43,7 +43,7 @@ import image from "../assets/img/bg7.jpg";
 import * as SIP from "../sip/SIP";
 import { getRegister, setRegister } from "../config/config";
 
-export default function SipRegister({ isRegistered }) {
+export default function SipRegister({ sharedErrorMsg, setSharedErrorMsg }) {
   const pageClasses = makeStyles(pageStyles)();
   const crsClasses = makeStyles(crsStyles)();
   const history = useHistory();
@@ -51,7 +51,7 @@ export default function SipRegister({ isRegistered }) {
   const [loading, setLoading] = useState(false);
   const [regPhase, setRegPhase] = useState(0);
 
-  const [errorMsg, setErrorMsg] = useState(''); const errorMsgLengthCap = 75;
+  const [errorMsg, setErrorMsg] = useState(sharedErrorMsg); const errorMsgLengthCap = 75;
   const [rememberMe, setRememberMe] = useState(true);
 
   const [domain, setDomain] = useState(getRegister('domain'));
@@ -74,18 +74,22 @@ export default function SipRegister({ isRegistered }) {
   function toHome(regRes) {
     SIP.setIsRegistered(true);
     const expiresMs = parseInt(regRes.headers.expires) * 1000;
-    setInterval(() => {
-        SIP.register(null, res => {
-          SIP.register(SIP.getUA().auth.password, res => {
-            if (res.status >= 300) {
-              SIP.setIsRegistered(false);
-              setErrorMsg('Automatic SIP re-registration failed. Please register manually.');
-              SIP.stop();
-              history.push('/');
-            }
+    SIP.setReRegisterInterval(
+      setInterval(() => {
+        if (SIP.getIsRegistered()) {
+          SIP.register(null, res => {
+            SIP.register(SIP.getUA().auth.password, res => {
+              if (res.status >= 300) {
+                SIP.setIsRegistered(false);
+                setSharedErrorMsg('Automatic SIP re-registration failed.\nPlease register manually.');
+                SIP.stop();
+                history.push('/');
+              }
+            });
           });
-        });
-    }, Math.round((5.0 / 6) * expiresMs));
+        }
+      }, Math.round((2.0 / 6) * expiresMs))
+    );
     history.push('/home');
   }
 
