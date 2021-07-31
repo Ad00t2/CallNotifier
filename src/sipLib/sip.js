@@ -554,25 +554,25 @@ function makeStreamTransport(protocol, connect, createServer, callback) {
     return remotes[remoteid];
   }
 
-  var server = createServer(function(stream) {
+  var server = createServer((stream) => {
     init(stream, {protocol: protocol, address: stream.remoteAddress, port: stream.remotePort});
   });
 
   return {
-    open: function(remote, error) {
+    open: (remote, error) => {
       var remoteid = [remote.address, remote.port].join();
 
       if(remoteid in remotes) return remotes[remoteid](error);
 
       return init(connect(remote.port, remote.address), remote)(error);
     },
-    get: function(address, error) {
+    get: (address, error) => {
       var c = address.local ? flows[[address.address, address.port, address.local.address, address.local.port].join()]
         : remotes[[address.address, address.port].join()];
 
       return c && c(error);
     },
-    destroy: function() { server.close(); }
+    destroy: () => { server.close(); }
   };
 }
 
@@ -1365,9 +1365,5 @@ export function create(options, callback) {
       transport.destroy();
     }
   }
-}
-
-export function start(options, callback) {
-  return create(options, callback);
 }
 

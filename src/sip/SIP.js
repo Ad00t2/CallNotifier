@@ -12,8 +12,10 @@ import * as digest from "../sipLib/digest";
 const fs = require('fs');
 const randString = require('randomstring');
 
-var UA;
 var isStarted = false;
+var isRegistered = false;
+
+var UA;
 var sipClient;
 const sipLog = [];
 
@@ -26,21 +28,42 @@ function onCancel(req, remote) {
     ReqGen.createReq({
       method: 'NOTIFY',
       to: req.headers.from,
-      seq: req.headers.cseq.seq
+      seq: req.headers.cseq.seq + 1
     })
   );
   sipClient.send(sip.makeResponse(req, 487, 'REQUEST TERMINATED'));
 }
 
+var lastInviteContent = ''
 function onInvite(req, remote) {
   sipClient.send(sip.makeResponse(req, 100, 'TRYING'));
   sipClient.send(sip.makeResponse(req, 486, 'BUSY HERE'));
-  const parsedURI = sip.parseUri(req.headers.from.uri);
-  shell.openExternal(`http://support.langineers.com:8091/?tnum=${parsedURI.user}`);
+  if (req.content !== lastInviteContent) {
+    const parsedURI = sip.parseUri(req.headers.from.uri);
+    shell.openExternal(`http://support.langineers.com:8091/?tnum=${parsedURI.user}`);
+    lastInviteContent = req.content;
+  }
 }
 
-function start(options) {
-  sipClient = sip.start(options, (req, remote) => {
+var sipLogCallback = (sipLog) => {};
+
+function addSipLogEntry(message, address, isSend) {
+  sipLog.unshift({ "id": randString.generate(8), "message": message, "address": address, "time": Date.now(), "isSend": isSend });
+  sipLogCallback(sipLog);
+}
+
+export function clearSipLog() {
+  sipLog.length = 0;
+  sipLogCallback(sipLog);
+}
+
+export function setSipLogCallback(callback) {
+  sipLogCallback = callback;
+  sipLogCallback(sipLog);
+}
+
+function create(options) {
+  sipClient = sip.create(options, (req, remote) => {
     switch (req.method) {
       case 'BYE':
         onBye(req, remote);
@@ -58,64 +81,63 @@ function start(options) {
   isStarted = true;
 }
 
-function setProtocolOptions(options, protocol) {
-  options.tcp = (protocol === 'TCP');
-  options.udp = (protocol === 'UDP');
-  if (protocol === 'TLS')
-    options.tls = {};
-}
-
-var sipLogCallback = (sipLog) => {};
-
-function addSipLogEntry(message, address, isSend) {
-  sipLog.unshift({ "id": randString.generate(8), "message": message, "address": address, "time": Date.now(), "isSend": isSend });
-  sipLogCallback(sipLog);
-}
-
-function clearSipLog() {
-  sipLog.length = 0;
-  sipLogCallback(sipLog);
-}
-
-export function setSipLogCallback(callback) {
-  sipLogCallback = callback;
-  sipLogCallback(sipLog);
-}
-
-export function init(domain, proxy, tlsAddress, user, protocol) {
-  UA = new UserAgent(domain, proxy, tlsAddress, user, protocol);
-  ReqGen.init(UA);
-  const options = {
-    logger: {
-      send: (message, address) => {
-        console.log(`send ${JSON.stringify(address)}`); console.log(message);
-        addSipLogEntry(message, address, true);
-      },
-      recv: (message, address) => {
-        console.log(`recv ${JSON.stringify(address)}`); console.log(message);
-        addSipLogEntry(message, address, false);
-      },
-      error: (e) => {
-        console.error(e);
-      }
-    },
-    maxBytesHeaders: 604800,
-    maxContentLength: 604800,
-    publicAddress: domain,
-    tlsAddress: tlsAddress
-  };
-  setProtocolOptions(options, protocol);
-  start(options);
+export function init(domain, proxy, tlsAddress, user, protocol, callback) {
+  fetch('https://api.ipify.org/')
+    .then(response => response.text())
+    .then(text => {
+      console.log(text);
+      UA = new UserAgent(domain, proxy, text, tlsAddress, user, protocol);
+      const options = {
+        logger: {
+          send: (message, address) => {
+            console.log(`send ${JSON.stringify(address)}`); console.log(message);
+            addSipLogEntry(message, address, true);
+          },
+          recv: (message, address) => {
+            console.log(`recv ${JSON.stringify(address)}`); console.log(message);
+            addSipLogEntry(message, address, false);
+          },
+          error: (e) => {
+            console.error(e);
+          }
+        },
+        maxBytesHeaders: 604800,
+        maxContentLength: 604800,
+        publicAddress: UA.publicAddress,
+        tlsAddress: tlsAddress,
+        tcp: (protocol === 'TCP'),
+        udp: (protocol === 'UDP')
+      };
+      if (protocol === 'TLS')
+        options.tls = {};
+      create(options);
+      callback();
+    });
 }
 
 export function getUA() {
   return UA;
 }
 
+var isRegisteredCallback = (isReg) => {};
+
+export function setIsRegisteredCallback(callback) {
+  isRegisteredCallback = callback;
+}
+
+export function setIsRegistered(pIsRegistered) {
+  isRegistered = pIsRegistered;
+  isRegisteredCallback(isRegistered);
+}
+
 var challengeRes = {}; var regCseq = 0;
-export function register(password, isUnregistering, callback) {
+function sendRegister(password, isUnregistering, callback) {
   const isAuth = (password != null);
-  const registerReq = ReqGen.createReq({ method: 'REGISTER', seq: ++regCseq, expires: (isUnregistering ? 0 : 7200) });
+
+  const opts = { method: 'REGISTER', uri: `${UA.getSipPref()}:${UA.proxy}`, seq: ++regCseq, expires: (isUnregistering ? 0 : 3600) };
+  if (isAuth) opts['call-id'] = challengeRes.headers['call-id'];
+  const registerReq = ReqGen.createReq(opts);
+
   if (isAuth) {
     if (!('auth' in UA))
       UA.setAuthDetails(challengeRes.headers["proxy-authenticate"][0].realm, password);
@@ -137,10 +159,14 @@ export function register(password, isUnregistering, callback) {
   });
 }
 
+export function register(password, callback) {
+  sendRegister(password, false, callback);
+}
+
 export function unRegister(callback) {
-  register(null, true, res => {
-    register(UA.auth.password, true, res => {
-      clearSipLog();
+  sendRegister(null, true, res => {
+    sendRegister(UA.auth.password, true, res => {
+      setIsRegistered(false);
       callback(res);
     });
   });
