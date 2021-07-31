@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-import React from "react";
+import React, { useState, useEffect } from 'react';
 import { useHistory } from "react-router-dom";
 
 // @material-ui/core components
@@ -43,23 +43,23 @@ import image from "../assets/img/bg7.jpg";
 import * as SIP from "../sip/SIP";
 import { getRegister, setRegister } from "../config/config";
 
-export default function SipRegister({ setIsRegistered }) {
+export default function SipRegister({ isRegistered }) {
   const pageClasses = makeStyles(pageStyles)();
   const crsClasses = makeStyles(crsStyles)();
   const history = useHistory();
 
-  const [loading, setLoading] = React.useState(false);
-  const [regPhase, setRegPhase] = React.useState(0);
+  const [loading, setLoading] = useState(false);
+  const [regPhase, setRegPhase] = useState(0);
 
-  const [errorMsg, setErrorMsg] = React.useState(''); const errorMsgLengthCap = 75;
-  const [rememberMe, setRememberMe] = React.useState(true);
+  const [errorMsg, setErrorMsg] = useState(''); const errorMsgLengthCap = 75;
+  const [rememberMe, setRememberMe] = useState(true);
 
-  const [domain, setDomain] = React.useState(getRegister('domain'));
-  const [proxy, setProxy] = React.useState(getRegister('proxy'));
-  const [tlsAddress, setTlsAddress] = React.useState(getRegister('tlsAddress') === '' ? 'arc2.langineers.com' : getRegister('tlsAddress'));
-  const [user, setUser] = React.useState(getRegister('user'));
-  const [protocol, setProtocol] = React.useState(getRegister('protocol'));
-  const [password, setPassword] = React.useState('');
+  const [domain, setDomain] = useState(getRegister('domain'));
+  const [proxy, setProxy] = useState(getRegister('proxy'));
+  const [tlsAddress, setTlsAddress] = useState(getRegister('tlsAddress') === '' ? 'arc2.langineers.com' : getRegister('tlsAddress'));
+  const [user, setUser] = useState(getRegister('user'));
+  const [protocol, setProtocol] = useState(getRegister('protocol'));
+  const [password, setPassword] = useState('');
 
   function raiseError(msg) {
     setErrorMsg(msg);
@@ -71,8 +71,20 @@ export default function SipRegister({ setIsRegistered }) {
     setRegPhase(0);
   }
 
-  function toHome(isRegistered) {
-    setIsRegistered(isRegistered);
+  function toHome(regRes) {
+    SIP.setIsRegistered(true);
+    setInterval(() => {
+      if (!isRegistered) {
+        SIP.unRegister(res => {
+          SIP.register(null, res => {
+            SIP.register(SIP.getUA().auth.password, res => {
+              if (res.status >= 200 && res.status < 300) SIP.setIsRegistered(true);
+              else if (res.status >= 300) { SIP.stop(); history.push('/'); }
+            });
+          });
+        });
+      }
+    }, Math.round(((5.0 / 6) * parseInt(regRes.headers.expires)) * 1000));
     history.push('/home');
   }
 
@@ -85,29 +97,30 @@ export default function SipRegister({ setIsRegistered }) {
       if (rememberMe) setRegister(domain, proxy, tlsAddress, user, protocol, true);
       else setRegister("", "", "", "", "", true);
 
-      SIP.init(domain, proxy, tlsAddress, user, protocol);
-      SIP.register(null, false, res => {
-        setLoading(false);
-        if (res) {
-          if (res.status === 401 || res.status === 407) setRegPhase(1);
-          else if (res.status >= 200 && res.status < 300) toHome(true);
-          else if (res.status >= 300) raiseError(`A SIP error has occurred.\nPlease try again.\nResponse:\n${JSON.stringify(res)}`);
-          else raiseError(`Unknown response:\n${JSON.stringify(res)}\nPlease try again.`);
-        } else {
-          raiseError('No response.\nPlease try again.');
-        }
+      SIP.init(domain, proxy, tlsAddress, user, protocol, () => {
+        SIP.register(null, res => {
+          if (res) {
+            if (res.status === 401 || res.status === 407) setRegPhase(1);
+            else if (res.status >= 200 && res.status < 300) toHome(res);
+            else if (res.status >= 300) raiseError(`A SIP error has occurred.\nPlease try again.\nResponse:\n${JSON.stringify(res)}`);
+            else raiseError(`Unknown response:\n${JSON.stringify(res)}\nPlease try again.`);
+          } else {
+            raiseError('No response.\nPlease try again.');
+          }
+          setLoading(false);
+        });
       });
     } else if (regPhase === 1) {
-      SIP.register(password, false, res => {
-        setLoading(false);
+      SIP.register(password, res => {
         if (res) {
           if (res.status === 401 || res.status === 407) { setErrorMsg(`Authentication failed.\nPlease try again.\nResponse: ${JSON.stringify(res)}`); back(); }
-          else if (res.status >= 200 && res.status < 300) toHome(true);
+          else if (res.status >= 200 && res.status < 300) toHome(res);
           else if (res.status >= 300) raiseError(`A SIP error has occurred.\nPlease try again.\nResponse: ${JSON.stringify(res)}`);
           else raiseError(`Unknown response:\n${JSON.stringify(res)}\nPlease try again.`);
         } else {
           raiseError('No response.\nPlease try again.');
         }
+        setLoading(false);
       });
     }
   }

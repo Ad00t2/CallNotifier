@@ -37,13 +37,13 @@ import { primaryColor, infoColor, successColor, roseColor, warningColor, dangerC
 // CallNotifier
 import * as SIP from "../sip/SIP";
 
-function LogEntry({ entry }) {
+function LogEntry({ entry, i }) {
   const pageClasses = makeStyles(pageStyles)();
   const reqResIconClasses = makeStyles(theme => ({
     reqResIcon: {
       position: 'absolute',
-      left: '91%',
-      top: '16%'
+      left: '92%',
+      top: '1.5em'
     }
   }))();
 
@@ -53,7 +53,7 @@ function LogEntry({ entry }) {
 
   return (
     <Card
-      style={{ width: "32em" }}
+      style={{ width: "35em" }}
       title={`Message: ${JSON.stringify(entry.message)}`}
     >
       <CardBody>
@@ -66,6 +66,7 @@ function LogEntry({ entry }) {
         </InputAdornment>
         { (isReq(entry)) ?
           <div id="requestInfo">
+            <h3 style={{ display: "inline" }}>{i}&emsp;</h3>
             <h3 style={{ color: primaryColor, display: "inline" }}>Request&emsp;</h3>
             <h4 style={{ display: "inline" }}>
                 { `${entry.message.headers.expires === 0 ? '(UN)' : ''}${entry.message.method} - #${entry.message.headers.cseq.seq}` }
@@ -76,13 +77,14 @@ function LogEntry({ entry }) {
           </div>
           :
           <div id="responseInfo">
+            <h3 style={{ display: "inline" }}>{i}&emsp;</h3>
             <h3 style={{ color: infoColor, display: "inline" }}>Response&emsp;</h3>
             <h4 style={{ color: (entry.message.status == 200 ? successColor : dangerColor), display: "inline" }}>
               { `${entry.message.status} - "${entry.message.reason}"` }
             </h4>
           </div>
         }
-        <div id="commonInfo">
+        <div id="commonFooter">
           <p>
             {`${entry.address.protocol.toUpperCase()} / ${entry.address.address}:${entry.address.port}`}
           </p>
@@ -101,25 +103,6 @@ function LogEntry({ entry }) {
   );
 }
 
-function SipLog({ sipLog }) {
-  return (
-    <div
-      style={{
-        margin: "5em auto",
-        overflow: "auto",
-        width: "70vw",
-        maxHeight: "75vh"
-      }}
-    >
-      {
-        sipLog.map((entry) => {
-          return (<LogEntry key={entry.id} entry={entry} />);
-        })
-      }
-    </div>
-  );
-}
-
 export default function Home({ isRegistered }) {
   const pageClasses = makeStyles(pageStyles)();
   const history = useHistory();
@@ -135,8 +118,9 @@ export default function Home({ isRegistered }) {
   function unRegister() {
     setLoading(true);
     SIP.unRegister(res => {
-      setLoading(false);
+      SIP.clearSipLog();
       SIP.stop();
+      setLoading(false);
       history.push('/');
     });
   }
@@ -176,8 +160,8 @@ export default function Home({ isRegistered }) {
             }}
           >
             {
-              sipLog.map((entry) => {
-                return (<LogEntry key={entry.id} entry={entry} />);
+              sipLog.map((entry, i) => {
+                return (<LogEntry key={entry.id} entry={entry} i={sipLog.length - i} />);
               })
             }
           </div>

@@ -7,55 +7,41 @@ const randString = require('randomstring');
 
 var UA;
 
-export function init(paramUA) {
-  UA = paramUA;
-}
-
-function getSelfContact() {
-  return {
-    name: UA.user,
-    uri: UA.getAOR(true)
-  };
+export function init(pUA) {
+  UA = pUA;
 }
 
 function getDefaultHeaders(opts) {
   return {
-    // via: [
-    //   {
-    //     version: '2.0',
-    //     protocol: UA.protocol,
-    //     host: UA.proxy,
-    //     params: { branch: randString.generate(16) }
-    //   }
-    // ],
     'max-forwards': '20',
-    from: {
-      name: UA.user,
-      uri: UA.getAOR(false),
-      params: { tag: randString.generate(10) }
-    },
+    from: { name: UA.user, uri: UA.getAOR(false), params: { tag: randString.generate(10) } },
     to: opts.to,
-    'call-id': `${randString.generate(14)}@${UA.proxy}`,
     cseq: { seq: opts.seq, method: opts.method },
-    contact: [ getSelfContact() ],
-    'content-type': 'application/sdp',
-    'content-length': (new TextEncoder().encode(opts.content)).length
+    contact: [{ name: UA.user, uri: UA.getAOR(true) }]
   };
 }
 
 export function createReq(opts) {
   opts.method = opts.method.toUpperCase();
-  if (!opts.to) opts.to = getSelfContact();
-  if (!opts.content) opts.content = '';
+  if (!('to' in opts)) opts.to = { name: UA.user, uri: UA.getAOR(false) };
+  if (!('uri' in opts)) opts.uri = opts.to.uri;
 
   const req = {};
   req.method = opts.method;
-  req.uri = opts.to.uri;
+  req.uri = opts.uri;
   req.version = '2.0';
   req.headers = getDefaultHeaders(opts);
 
+  if ('call-id' in opts) req.headers['call-id'] = opts['call-id'];
+  else req.headers['call-id'] = `${randString.generate(14)}@${UA.proxy}`;
   if ('expires' in opts) req.headers.expires = opts.expires;
-  req.content = opts.content;
+
+  req.headers['content-length'] = 0;
+  if (opts.content) {
+    req.content = opts.content;
+    req.headers['content-type'] = 'application/sdp';
+    req.headers['content-length'] = (new TextEncoder().encode(opts.content)).length;
+  }
 
   return req;
 }

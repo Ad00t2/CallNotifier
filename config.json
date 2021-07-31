@@ -1,1 +1,1 @@
-{"register":{"domain":"langineerstest.com","proxy":"core1-us-ca-sf.langineers.com","tlsAddress":"arc2.langineers.com","user":"209","protocol":"UDP"}}
+{"register":{"domain":"langineerstest.com","proxy":"core1-us-ca-sf.langineers.com","tlsAddress":"arc2.langineers.com","user":"209","protocol":"TLS"}}

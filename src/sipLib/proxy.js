@@ -84,8 +84,8 @@ function onRequest(rq, route, remote) {
   }
 };
 
-export function start(options, route) {
-  var sipClient = sip.start(options, function(rq, remote) {
+export function create(options, route) {
+  sipClient = sip.create(options, function(rq, remote) {
     if(rq.method === 'CANCEL') {
       var ctx = contexts[makeContextId(rq)];
 
