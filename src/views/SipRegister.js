@@ -43,7 +43,7 @@ import image from "../assets/img/bg7.jpg";
 import * as SIP from "../sip/SIP";
 import { getRegister, setRegister } from "../config/config";
 
-export default function SipRegister({ isRegistered }) {
+export default function SipRegister({ sharedErrorMsg, setSharedErrorMsg }) {
   const pageClasses = makeStyles(pageStyles)();
   const crsClasses = makeStyles(crsStyles)();
   const history = useHistory();
@@ -51,12 +51,10 @@ export default function SipRegister({ isRegistered }) {
   const [loading, setLoading] = useState(false);
   const [regPhase, setRegPhase] = useState(0);
 
-  const [errorMsg, setErrorMsg] = useState(''); const errorMsgLengthCap = 75;
+  const [errorMsg, setErrorMsg] = useState(sharedErrorMsg); const errorMsgLengthCap = 75;
   const [rememberMe, setRememberMe] = useState(true);
 
   const [domain, setDomain] = useState(getRegister('domain'));
-  const [proxy, setProxy] = useState(getRegister('proxy'));
-  const [tlsAddress, setTlsAddress] = useState(getRegister('tlsAddress') === '' ? 'arc2.langineers.com' : getRegister('tlsAddress'));
   const [user, setUser] = useState(getRegister('user'));
   const [protocol, setProtocol] = useState(getRegister('protocol'));
   const [password, setPassword] = useState('');
@@ -73,36 +71,41 @@ export default function SipRegister({ isRegistered }) {
 
   function toHome(regRes) {
     SIP.setIsRegistered(true);
-    setInterval(() => {
-      if (!isRegistered) {
-        SIP.unRegister(res => {
+    const expiresMs = parseInt(regRes.headers.expires) * 1000;
+    SIP.setReRegisterInterval(
+      setInterval(() => {
+        if (SIP.getIsRegistered()) {
           SIP.register(null, res => {
             SIP.register(SIP.getUA().auth.password, res => {
-              if (res.status >= 200 && res.status < 300) SIP.setIsRegistered(true);
-              else if (res.status >= 300) { SIP.stop(); history.push('/'); }
+              if (res.status >= 300) {
+                SIP.setIsRegistered(false);
+                setSharedErrorMsg('Automatic SIP re-registration failed.\nPlease register manually.');
+                SIP.stop();
+                history.push('/');
+              }
             });
           });
-        });
-      }
-    }, Math.round(((5.0 / 6) * parseInt(regRes.headers.expires)) * 1000));
+        }
+      }, Math.round((2.0 / 6) * expiresMs))
+    );
     history.push('/home');
   }
 
-  function onSubmit(e) {
+  async function onSubmit(e) {
     e.preventDefault();
     setLoading(true);
     setErrorMsg('');
 
     if (regPhase === 0) {
-      if (rememberMe) setRegister(domain, proxy, tlsAddress, user, protocol, true);
-      else setRegister("", "", "", "", "", true);
+      if (rememberMe) setRegister(domain, user, protocol, true);
+      else setRegister("", "", "", true);
 
-      SIP.init(domain, proxy, tlsAddress, user, protocol, () => {
+      SIP.init(domain, user, protocol, () => {
         SIP.register(null, res => {
           if (res) {
             if (res.status === 401 || res.status === 407) setRegPhase(1);
             else if (res.status >= 200 && res.status < 300) toHome(res);
-            else if (res.status >= 300) raiseError(`A SIP error has occurred.\nPlease try again.\nResponse:\n${JSON.stringify(res)}`);
+            else if (res.status >= 300) raiseError(`A SIP error has occurred.\nPlease try again.\n${JSON.stringify(res)}`);
             else raiseError(`Unknown response:\n${JSON.stringify(res)}\nPlease try again.`);
           } else {
             raiseError('No response.\nPlease try again.');
@@ -113,9 +116,9 @@ export default function SipRegister({ isRegistered }) {
     } else if (regPhase === 1) {
       SIP.register(password, res => {
         if (res) {
-          if (res.status === 401 || res.status === 407) { setErrorMsg(`Authentication failed.\nPlease try again.\nResponse: ${JSON.stringify(res)}`); back(); }
+          if (res.status === 401 || res.status === 407) { setErrorMsg(`Authentication failed.\nPlease try again.\n${JSON.stringify(res)}`); back(); }
           else if (res.status >= 200 && res.status < 300) toHome(res);
-          else if (res.status >= 300) raiseError(`A SIP error has occurred.\nPlease try again.\nResponse: ${JSON.stringify(res)}`);
+          else if (res.status >= 300) raiseError(`A SIP error has occurred.\nPlease try again.\n${JSON.stringify(res)}`);
           else raiseError(`Unknown response:\n${JSON.stringify(res)}\nPlease try again.`);
         } else {
           raiseError('No response.\nPlease try again.');
@@ -176,38 +179,6 @@ export default function SipRegister({ isRegistered }) {
                         onChange: (e) => setDomain(e.target.value)
                       }}
                     />
-                    <CustomInput
-                      labelText="Proxy"
-                      id="proxy"
-                      formControlProps={{ fullWidth: true }}
-                      inputProps={{
-                        type: "text",
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <Dns className={pageClasses.inputIconsColor} />
-                          </InputAdornment>
-                        ),
-                        value: proxy,
-                        onChange: (e) => setProxy(e.target.value)
-                      }}
-                    />
-                    { (protocol === 'TLS') &&
-                      <CustomInput
-                        labelText="TLS Address"
-                        id="tlsAddress"
-                        formControlProps={{ fullWidth: true }}
-                        inputProps={{
-                          type: "text",
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              <Fingerprint className={pageClasses.inputIconsColor} />
-                            </InputAdornment>
-                          ),
-                          value: tlsAddress,
-                          onChange: (e) => setTlsAddress(e.target.value)
-                        }}
-                      />
-                    }
                     <CustomInput
                       labelText="User"
                       id="user"

@@ -4,13 +4,17 @@ import * as ReqGen from "./RequestGenerator";
 
 export default class UserAgent {
 
-  constructor(domain, proxy, publicAddress, tlsAddress, user, protocol) {
+  constructor(domain, user, protocol, publicAddress) {
     this.domain = domain;
-    this.proxy = proxy;
-    this.publicAddress = publicAddress;
-    this.tlsAddress = tlsAddress;
     this.user = user;
-    this.protocol = protocol.toUpperCase();
+    this.protocol = protocol;
+    this.publicAddress = publicAddress;
+    switch (this.protocol) {
+      case 'TCP': this.proxy = 'core1-us-ca-sf.langineers.com'; break;
+      case 'UDP': this.proxy = '64.124.219.184'; break
+      case 'TLS': this.proxy = 'core1-us-ca-sf.langineers.com'; break;
+    }
+    this.tlsAddress = 'arc2.langineers.com';
     ReqGen.init(this);
   }
 

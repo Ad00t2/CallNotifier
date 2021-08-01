@@ -103,7 +103,7 @@ function LogEntry({ entry, i }) {
   );
 }
 
-export default function Home({ isRegistered }) {
+export default function Home({}) {
   const pageClasses = makeStyles(pageStyles)();
   const history = useHistory();
 
@@ -118,9 +118,9 @@ export default function Home({ isRegistered }) {
   function unRegister() {
     setLoading(true);
     SIP.unRegister(res => {
+      setLoading(false);
       SIP.clearSipLog();
       SIP.stop();
-      setLoading(false);
       history.push('/');
     });
   }
@@ -135,8 +135,8 @@ export default function Home({ isRegistered }) {
     >
       <CardBody>
         <div id="topRow" style={{ display: "inline" }}>
-          <Badge style={{ float: "left" }} color={isRegistered ? "success" : "danger"}>{isRegistered ? "" : "Not "}SIP Registered</Badge>
           <Button size="sm" style={{ float: "right" }} onClick={() => unRegister()} color="primary">Unregister</Button>
+        </div>
         <div id="loader"
           style={{
             position: "absolute", left: "50%", top: "50%",
@@ -148,7 +148,6 @@ export default function Home({ isRegistered }) {
             loading={loading}
             size="5em"
           />
-        </div>
         </div>
         { (!loading) &&
           <div

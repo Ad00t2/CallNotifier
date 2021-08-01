@@ -11,19 +11,13 @@ import * as SIP from './sip/SIP';
 
 const App = () => {
 
-  // READ ONLY: do NOT use this setIsRegistered. Use SIP.setIsRegistered because it calls back to this. Keep the register status centralized.
-  const [isRegistered, setIsRegistered] = useState(false);
-
-  useEffect(() => {
-    SIP.setIsRegisteredCallback((isReg : boolean) => { setIsRegistered(isReg); });
-    return () => SIP.setIsRegisteredCallback((isReg : boolean) => { });
-  }, []);
+  const [sharedErrorMsg, setSharedErrorMsg] = useState('');
 
   return (
     <Router>
       <Switch>
-        <Route path="/home" component={() => <Home isRegistered={isRegistered} />} />
-        <Route path="/" component={() => <SipRegister isRegistered={isRegistered} />} />
+        <Route path="/home" component={() => <Home />} />
+        <Route path="/" component={() => <SipRegister sharedErrorMsg={sharedErrorMsg} setSharedErrorMsg={setSharedErrorMsg} />} />
       </Switch>
     </Router>
   );
