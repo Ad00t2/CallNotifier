@@ -86,7 +86,7 @@ export default function SipRegister({ sharedErrorMsg, setSharedErrorMsg }) {
             });
           });
         }
-      }, Math.round((2.0 / 6) * expiresMs))
+      }, Math.round((5.0 / 6) * expiresMs))
     );
     history.push('/home');
   }
