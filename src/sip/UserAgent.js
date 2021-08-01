@@ -9,11 +9,7 @@ export default class UserAgent {
     this.user = user;
     this.protocol = protocol;
     this.publicAddress = publicAddress;
-    switch (this.protocol) {
-      case 'TCP': this.proxy = 'core1-us-ca-sf.langineers.com'; break;
-      case 'UDP': this.proxy = '64.124.219.184'; break
-      case 'TLS': this.proxy = 'core1-us-ca-sf.langineers.com'; break;
-    }
+    this.proxy = 'core1-us-ca-sf.langineers.com';
     this.tlsAddress = 'arc2.langineers.com';
     ReqGen.init(this);
   }
