@@ -118,9 +118,9 @@ export default function Home({}) {
   function unRegister() {
     setLoading(true);
     SIP.unRegister(res => {
+      setLoading(false);
       SIP.clearSipLog();
       SIP.stop();
-      setLoading(false);
       history.push('/');
     });
   }
@@ -135,20 +135,19 @@ export default function Home({}) {
     >
       <CardBody>
         <div id="topRow" style={{ display: "inline" }}>
-          {/* <Badge style={{ float: "left" }} color={isRegistered ? "success" : "danger"}>{isRegistered ? "" : "Not "}SIP Registered</Badge> */}
           <Button size="sm" style={{ float: "right" }} onClick={() => unRegister()} color="primary">Unregister</Button>
-          <div id="loader"
-            style={{
-              position: "absolute", left: "50%", top: "50%",
-              transform: "translate(-50%, -50%)"
-            }}
-          >
-            <ClipLoader
-              color={primaryColor}
-              loading={loading}
-              size="5em"
-            />
-          </div>
+        </div>
+        <div id="loader"
+          style={{
+            position: "absolute", left: "50%", top: "50%",
+            transform: "translate(-50%, -50%)"
+          }}
+        >
+          <ClipLoader
+            color={primaryColor}
+            loading={loading}
+            size="5em"
+          />
         </div>
         { (!loading) &&
           <div

@@ -55,8 +55,6 @@ export default function SipRegister({ sharedErrorMsg, setSharedErrorMsg }) {
   const [rememberMe, setRememberMe] = useState(true);
 
   const [domain, setDomain] = useState(getRegister('domain'));
-  const [proxy, setProxy] = useState(getRegister('proxy'));
-  const [tlsAddress, setTlsAddress] = useState(getRegister('tlsAddress') === '' ? 'arc2.langineers.com' : getRegister('tlsAddress'));
   const [user, setUser] = useState(getRegister('user'));
   const [protocol, setProtocol] = useState(getRegister('protocol'));
   const [password, setPassword] = useState('');
@@ -93,21 +91,21 @@ export default function SipRegister({ sharedErrorMsg, setSharedErrorMsg }) {
     history.push('/home');
   }
 
-  function onSubmit(e) {
+  async function onSubmit(e) {
     e.preventDefault();
     setLoading(true);
     setErrorMsg('');
 
     if (regPhase === 0) {
-      if (rememberMe) setRegister(domain, proxy, tlsAddress, user, protocol, true);
-      else setRegister("", "", "", "", "", true);
+      if (rememberMe) setRegister(domain, user, protocol, true);
+      else setRegister("", "", "", true);
 
-      SIP.init(domain, proxy, tlsAddress, user, protocol, () => {
+      SIP.init(domain, user, protocol, () => {
         SIP.register(null, res => {
           if (res) {
             if (res.status === 401 || res.status === 407) setRegPhase(1);
             else if (res.status >= 200 && res.status < 300) toHome(res);
-            else if (res.status >= 300) raiseError(`A SIP error has occurred.\nPlease try again.\nResponse:\n${JSON.stringify(res)}`);
+            else if (res.status >= 300) raiseError(`A SIP error has occurred.\nPlease try again.\n${JSON.stringify(res)}`);
             else raiseError(`Unknown response:\n${JSON.stringify(res)}\nPlease try again.`);
           } else {
             raiseError('No response.\nPlease try again.');
@@ -118,9 +116,9 @@ export default function SipRegister({ sharedErrorMsg, setSharedErrorMsg }) {
     } else if (regPhase === 1) {
       SIP.register(password, res => {
         if (res) {
-          if (res.status === 401 || res.status === 407) { setErrorMsg(`Authentication failed.\nPlease try again.\nResponse: ${JSON.stringify(res)}`); back(); }
+          if (res.status === 401 || res.status === 407) { setErrorMsg(`Authentication failed.\nPlease try again.\n${JSON.stringify(res)}`); back(); }
           else if (res.status >= 200 && res.status < 300) toHome(res);
-          else if (res.status >= 300) raiseError(`A SIP error has occurred.\nPlease try again.\nResponse: ${JSON.stringify(res)}`);
+          else if (res.status >= 300) raiseError(`A SIP error has occurred.\nPlease try again.\n${JSON.stringify(res)}`);
           else raiseError(`Unknown response:\n${JSON.stringify(res)}\nPlease try again.`);
         } else {
           raiseError('No response.\nPlease try again.');
@@ -181,38 +179,6 @@ export default function SipRegister({ sharedErrorMsg, setSharedErrorMsg }) {
                         onChange: (e) => setDomain(e.target.value)
                       }}
                     />
-                    <CustomInput
-                      labelText="Proxy"
-                      id="proxy"
-                      formControlProps={{ fullWidth: true }}
-                      inputProps={{
-                        type: "text",
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <Dns className={pageClasses.inputIconsColor} />
-                          </InputAdornment>
-                        ),
-                        value: proxy,
-                        onChange: (e) => setProxy(e.target.value)
-                      }}
-                    />
-                    { (protocol === 'TLS') &&
-                      <CustomInput
-                        labelText="TLS Address"
-                        id="tlsAddress"
-                        formControlProps={{ fullWidth: true }}
-                        inputProps={{
-                          type: "text",
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              <Fingerprint className={pageClasses.inputIconsColor} />
-                            </InputAdornment>
-                          ),
-                          value: tlsAddress,
-                          onChange: (e) => setTlsAddress(e.target.value)
-                        }}
-                      />
-                    }
                     <CustomInput
                       labelText="User"
                       id="user"

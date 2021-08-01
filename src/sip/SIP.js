@@ -19,6 +19,13 @@ var UA;
 var sipClient;
 const sipLog = [];
 
+// Copy & Pastes
+// 80IO73l6
+// core1-us-ca-sf.langineers.com - 64.124.219.184
+// core2-us-ca-sc.langineers.com - 64.74.129.251
+// arc2.langineers.com
+// langineerstest.com
+
 function onBye(req, remote) {
   sipClient.send(sip.makeResponse(req, 200, 'OK'));
 }
@@ -81,12 +88,12 @@ function create(options) {
   isStarted = true;
 }
 
-export function init(domain, proxy, tlsAddress, user, protocol, callback) {
+export function init(domain, user, protocol, callback) {
   fetch('https://api.ipify.org/')
     .then(response => response.text())
     .then(text => {
       console.log(text);
-      UA = new UserAgent(domain, proxy, text, tlsAddress, user, protocol);
+      UA = new UserAgent(domain, user, protocol, text);
       const options = {
         logger: {
           send: (message, address) => {
@@ -104,7 +111,7 @@ export function init(domain, proxy, tlsAddress, user, protocol, callback) {
         maxBytesHeaders: 604800,
         maxContentLength: 604800,
         publicAddress: UA.publicAddress,
-        tlsAddress: tlsAddress,
+        tlsAddress: UA.tlsAddress,
         tcp: (protocol === 'TCP'),
         udp: (protocol === 'UDP')
       };
@@ -133,7 +140,7 @@ function sendRegister(password, isUnregistering, callback) {
 
   const opts = { method: 'REGISTER', uri: `${UA.getSipPref()}:${UA.proxy}`, seq: ++regCseq, expires: (isUnregistering ? 0 : 3600) };
   if (isAuth) opts['call-id'] = challengeRes.headers['call-id'];
-  const registerReq = ReqGen.createReq(opts);
+  var registerReq = ReqGen.createReq(opts);
 
   if (isAuth) {
     if (!('auth' in UA))
@@ -145,24 +152,40 @@ function sendRegister(password, isUnregistering, callback) {
   // console.log('Challenge res');
   // console.log(challengeRes);
 
-  sipClient.send(registerReq, (res) => {
-    if (!isAuth) {
-      challengeRes = res;
-    } else {
+  if (isAuth) {
+    function fullCB(res) {
       regCseq = 0;
       challengeRes = {};
+      callback(res);
     }
-    callback(res);
-  });
+    sipClient.send(registerReq, (res) => {
+      if (res.status >= 200 && res.status < 300) fullCB(res);
+      else {
+        sipClient.send(registerReq, (res) => {
+          if (res.status >= 200 && res.status < 300) fullCB(res);
+          else {
+            sipClient.send(registerReq, (res) => {
+              if (res.status >= 200 && res.status < 300) fullCB(res);
+              else {
+                sipClient.send(registerReq, (res) => {
+                  fullCB(res);
+                });
+              }
+            });
+          }
+        });
+      }
+    });
+  } else {
+    sipClient.send(registerReq, (res) => {
+      challengeRes = res;
+      callback(res);
+    });
+  }
 }
 
 export function register(password, callback) {
   sendRegister(password, false, callback);
-}
-
-var reRegisterInterval;
-export function setReRegisterInterval(pReRegisterInterval) {
-  reRegisterInterval = pReRegisterInterval;
 }
 
 export function unRegister(callback) {
@@ -172,6 +195,11 @@ export function unRegister(callback) {
       callback(res);
     });
   });
+}
+
+var reRegisterInterval;
+export function setReRegisterInterval(pReRegisterInterval) {
+  reRegisterInterval = pReRegisterInterval;
 }
 
 export function stop() {
