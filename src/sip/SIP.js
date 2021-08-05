@@ -114,6 +114,7 @@ export function init(domain, user, password, protocol, callback) {
         maxContentLength: 604800,
         publicAddress: UA.publicAddress,
         tlsAddress: UA.tlsAddress,
+        prot: protocol,
         tcp: (protocol === 'TCP'),
         udp: (protocol === 'UDP')
       };
@@ -156,14 +157,8 @@ function regRetry(n, opts, cb) {
 }
 
 function sendRegister(isRegistering, callback) {
-  var sock = new net.Stream();
-  var connector = srv.connect(sock, [`_sip._${UA.protocol.toLowerCase()}`], 'core1-us-ca-sf.langineers.com', 5060);
-  connector
-    .on('error', (e) => { console.error(e); })
-    .on('connect', () => {
-      var opts = { method: 'REGISTER', uri: `${UA.getSipPref()}:${sock.remoteAddress}`, expires: (isRegistering ? 3600 : 0) };
-      regRetry(6, opts, callback);
-    });
+  var opts = { method: 'REGISTER', uri: `${UA.getSipPref()}:${UA.proxy}`, expires: (isRegistering ? 3600 : 0) };
+  regRetry(10, opts, callback);
 }
 
 export function register(callback) {
