@@ -10,7 +10,7 @@ var config = {};
   if (fs.existsSync(configFP))
     config = JSON.parse(fs.readFileSync(configFP));
   else
-    setRegister("", "", "", true);
+    clear();
 })();
 
 export function get(property) {
