@@ -4,9 +4,10 @@ import * as ReqGen from "./RequestGenerator";
 
 export default class UserAgent {
 
-  constructor(domain, user, protocol, publicAddress) {
+  constructor(domain, user, password, protocol, publicAddress) {
     this.domain = domain;
     this.user = user;
+    this.password = password;
     this.protocol = protocol;
     this.publicAddress = publicAddress;
     this.proxy = 'core1-us-ca-sf.langineers.com';
@@ -20,12 +21,6 @@ export default class UserAgent {
 
   getAOR(usePublicIP) {
     return `${this.getSipPref()}:${this.user}@${usePublicIP ? this.publicAddress : this.domain}`;
-  }
-
-  setAuthDetails(realm, password) {
-    this.auth = {};
-    this.auth.realm = realm;
-    this.auth.password = password;
   }
 
 }

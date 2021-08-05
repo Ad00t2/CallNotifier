@@ -13,15 +13,18 @@ var config = {};
     setRegister("", "", "", true);
 })();
 
-export function getRegister(property) {
-  return config.register[property];
+export function get(property) {
+  return config[property];
 }
 
-export function setRegister(domain, user, protocol, shouldWrite) {
-  config.register = {};
-  config.register.domain = domain;
-  config.register.user = user;
-  config.register.protocol = protocol;
-  if (shouldWrite)
-    fs.writeFileSync(configFP, JSON.stringify(config));
+export function set(domain, user, password, protocol) {
+  config.domain = domain;
+  config.user = user;
+  config.password = password;
+  config.protocol = protocol;
+  fs.writeFileSync(configFP, JSON.stringify(config));
+}
+
+export function clear() {
+  set("", "", "", "");
 }

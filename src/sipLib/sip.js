@@ -1297,6 +1297,7 @@ export function create(options, callback) {
       }
       else {
         var hop = parseUri(m.uri);
+        hop.params.transport = options.protocol;
 
         if(typeof m.headers.route === 'string')
           rq.headers.route = parsers.route({s: m.headers.route, i:0});

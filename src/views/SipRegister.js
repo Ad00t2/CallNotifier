@@ -41,7 +41,7 @@ import image from "../assets/img/bg7.jpg";
 
 // CallNotifier
 import * as SIP from "../sip/SIP";
-import { getRegister, setRegister } from "../config/config";
+import * as config from "../config/config";
 
 export default function SipRegister({ sharedErrorMsg, setSharedErrorMsg }) {
   const pageClasses = makeStyles(pageStyles)();
@@ -49,24 +49,17 @@ export default function SipRegister({ sharedErrorMsg, setSharedErrorMsg }) {
   const history = useHistory();
 
   const [loading, setLoading] = useState(false);
-  const [regPhase, setRegPhase] = useState(0);
-
   const [errorMsg, setErrorMsg] = useState(sharedErrorMsg); const errorMsgLengthCap = 75;
-  const [rememberMe, setRememberMe] = useState(true);
+  const [rememberUser, setRememberUser] = useState(true);
 
-  const [domain, setDomain] = useState(getRegister('domain'));
-  const [user, setUser] = useState(getRegister('user'));
-  const [protocol, setProtocol] = useState(getRegister('protocol'));
-  const [password, setPassword] = useState('');
+  const [domain, setDomain] = useState(config.get('domain'));
+  const [user, setUser] = useState(config.get('user'));
+  const [protocol, setProtocol] = useState(config.get('protocol'));
+  const [password, setPassword] = useState(config.get('password'));
 
   function raiseError(msg) {
     setErrorMsg(msg);
     SIP.stop();
-  }
-
-  function back() {
-    SIP.stop();
-    setRegPhase(0);
   }
 
   function toHome(regRes) {
@@ -75,15 +68,13 @@ export default function SipRegister({ sharedErrorMsg, setSharedErrorMsg }) {
     SIP.setReRegisterInterval(
       setInterval(() => {
         if (SIP.getIsRegistered()) {
-          SIP.register(null, res => {
-            SIP.register(SIP.getUA().auth.password, res => {
-              if (res.status >= 300) {
-                SIP.setIsRegistered(false);
-                setSharedErrorMsg('Automatic SIP re-registration failed.\nPlease register manually.');
-                SIP.stop();
-                history.push('/');
-              }
-            });
+          SIP.register((res) => {
+            if (res.status >= 300) {
+              SIP.setIsRegistered(false);
+              setSharedErrorMsg('Automatic SIP re-registration failed.\nPlease register manually.');
+              SIP.stop();
+              history.push('/');
+            }
           });
         }
       }, Math.round((5.0 / 6) * expiresMs))
@@ -91,41 +82,27 @@ export default function SipRegister({ sharedErrorMsg, setSharedErrorMsg }) {
     history.push('/home');
   }
 
-  async function onSubmit(e) {
+  function onSubmit(e) {
     e.preventDefault();
     setLoading(true);
     setErrorMsg('');
 
-    if (regPhase === 0) {
-      if (rememberMe) setRegister(domain, user, protocol, true);
-      else setRegister("", "", "", true);
+    if (rememberUser) config.set(domain, user, password, protocol);
+    else config.clear();
 
-      SIP.init(domain, user, protocol, () => {
-        SIP.register(null, res => {
-          if (res) {
-            if (res.status === 401 || res.status === 407) setRegPhase(1);
-            else if (res.status >= 200 && res.status < 300) toHome(res);
-            else if (res.status >= 300) raiseError(`A SIP error has occurred.\nPlease try again.\n${JSON.stringify(res)}`);
-            else raiseError(`Unknown response:\n${JSON.stringify(res)}\nPlease try again.`);
-          } else {
-            raiseError('No response.\nPlease try again.');
-          }
-          setLoading(false);
-        });
-      });
-    } else if (regPhase === 1) {
-      SIP.register(password, res => {
+    SIP.init(domain, user, password, protocol, () => {
+      SIP.register((res) => {
         if (res) {
-          if (res.status === 401 || res.status === 407) { setErrorMsg(`Authentication failed.\nPlease try again.\n${JSON.stringify(res)}`); back(); }
-          else if (res.status >= 200 && res.status < 300) toHome(res);
+          if (res.status === 401 || res.status === 407) { setErrorMsg(`Authentication failed.\nPlease try again.\n${JSON.stringify(res)}`); }
           else if (res.status >= 300) raiseError(`A SIP error has occurred.\nPlease try again.\n${JSON.stringify(res)}`);
+          else if (res.status >= 200 && res.status < 300) toHome(res);
           else raiseError(`Unknown response:\n${JSON.stringify(res)}\nPlease try again.`);
         } else {
           raiseError('No response.\nPlease try again.');
         }
         setLoading(false);
       });
-    }
+    });
   }
 
   return (
@@ -162,7 +139,7 @@ export default function SipRegister({ sharedErrorMsg, setSharedErrorMsg }) {
                 </CardHeader>
               }
               <form className={pageClasses.form} style={{ textAlign: "center", margin: "1em 0 0", display: "block" }} onSubmit={onSubmit}>
-                { (!loading && regPhase === 0) &&
+                { (!loading) &&
                   <div id="regInputs">
                     <CustomInput
                       labelText="Domain"
@@ -194,7 +171,23 @@ export default function SipRegister({ sharedErrorMsg, setSharedErrorMsg }) {
                         onChange: (e) => setUser(e.target.value)
                       }}
                     />
-                    <div id="opts" style={{ margin:"2em", display:"inline" }}>
+                    <CustomInput
+                      labelText="Password"
+                      id="pass"
+                      formControlProps={{ fullWidth: true }}
+                      inputProps={{
+                        type: "password",
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <Lock className={pageClasses.inputIconsColor} />
+                          </InputAdornment>
+                        ),
+                        autoComplete: "off",
+                        value: password,
+                        onChange: (e) => setPassword(e.target.value),
+                      }}
+                    />
+                    <div id="opts" style={{ margin:"1em", display:"inline" }}>
                       <FormControlLabel
                         classes={{ label: crsClasses.label }}
                         id="tcp"
@@ -250,48 +243,23 @@ export default function SipRegister({ sharedErrorMsg, setSharedErrorMsg }) {
                     <br />
                     <FormControlLabel
                       classes={{ label: crsClasses.label }}
-                      style={{ marginBottom: "0.75em" }}
+                      style={{ marginBottom: "0.75em", display: "block" }}
                       id="rememberMe"
                       label="Remember me"
                       control={
                         <Checkbox
-                          checked={ rememberMe }
-                          onChange={ (e) => setRememberMe(e.currentTarget.checked) }
-                          value={ rememberMe }
+                          checked={ rememberUser }
+                          onChange={ (e) => setRememberUser(e.currentTarget.checked) }
+                          value={ rememberUser }
                           checkedIcon={ <Check className={crsClasses.checkedIcon} /> }
                           icon={ <Check className={crsClasses.uncheckedIcon} />}
                           classes={ { checked: crsClasses.checked } }
                         />
                       }
                     />
-                  </div>
-                }
-                { (!loading && regPhase === 1) &&
-                  <div id="authInputs" style={{ marginBottom: "3em" }}>
-                    <CustomInput
-                      labelText="Password"
-                      id="pass"
-                      formControlProps={{ fullWidth: true }}
-                      inputProps={{
-                        type: "password",
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <Lock className={pageClasses.inputIconsColor} />
-                          </InputAdornment>
-                        ),
-                        autoComplete: "off",
-                        value: password,
-                        onChange: (e) => setPassword(e.target.value),
-                      }}
-                    />
-                  </div>
-                }
-                { (!loading) &&
-                  <div id="footer" style={{ display: "inline-block" }}>
-                    { (regPhase === 1) &&
-                      <Button style={{ marginRight: "0.5em" }} onClick={() => back()}>Back</Button>
-                    }
-                    <Button style={{ marginRight: "0.5em" }} type="submit" color="primary">Continue</Button>
+                    <div id="footer" style={{ display: "inline-block" }}>
+                      <Button style={{ marginRight: "0.5em" }} type="submit" color="primary">Continue</Button>
+                    </div>
                   </div>
                 }
               </form>
