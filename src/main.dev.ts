@@ -14,8 +14,11 @@ import path from 'path';
 import { app, BrowserWindow, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+import Store from 'electron-store';
 
 import * as SIP from "./sip/SIP";
+
+Store.initRenderer();
 
 export default class AppUpdater {
   constructor() {
@@ -86,6 +89,7 @@ const createWindow = async () => {
   //        https://github.com/electron/electron/blob/master/docs/api/browser-window.md#using-ready-to-show-event
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) throw new Error('"mainWindow" is not defined');
+    Store.initRenderer();
     mainWindow.show();
     mainWindow.focus();
   });
