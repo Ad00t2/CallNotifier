@@ -5,10 +5,12 @@ const path = require('path');
 const Store = require('electron-store');
 
 const store = new Store({
-  domain: { type: 'string', default: '' },
-  user: { type: 'string', default: '' },
-  password: { type: 'string', default: '' },
-  protocol: { type: 'string', default: '' }
+  schema: {
+    domain: { type: 'string', default: '' },
+    user: { type: 'string', default: '' },
+    password: { type: 'string', default: '' },
+    protocol: { type: 'string', default: '' }
+  }
 });
 
 export function get(property) {
