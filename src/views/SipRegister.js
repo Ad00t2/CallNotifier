@@ -87,7 +87,7 @@ export default function SipRegister({ sharedErrorMsg, setSharedErrorMsg }) {
     setLoading(true);
     setErrorMsg('');
 
-    if (rememberUser) config.set(domain, user, password, protocol);
+    if (rememberUser) config.setAll(domain, user, password, protocol);
     else config.clear();
 
     SIP.init(domain, user, password, protocol, () => {

@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <script>
       (() => {
+        process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
         if (process?.env?.NODE_ENV !== 'development') {
           const link = document.createElement('link');
           link.rel = 'stylesheet';
