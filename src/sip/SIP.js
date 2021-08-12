@@ -8,11 +8,10 @@ import * as ReqGen from "./RequestGenerator";
 
 import * as sip from "../sipLib/sip";
 import * as digest from "../sipLib/digest";
+import * as config from "../config/config";
 
 const fs = require('fs');
 const randString = require('randomstring');
-const srv = require('dns-srv');
-const net = require('net');
 
 var isStarted = false;
 var isRegistered = false;
@@ -49,7 +48,9 @@ function onInvite(req, remote) {
   sipClient.send(sip.makeResponse(req, 486, 'BUSY HERE'));
   if (req.content !== lastInviteContent) {
     const parsedURI = sip.parseUri(req.headers.from.uri);
-    shell.openExternal(`http://support.langineers.com:8091/?tnum=${parsedURI.user}`);
+    const link = config.get('callURL').replace('<num>', parsedURI.user);
+    console.log(link);
+    shell.openExternal(link);
     lastInviteContent = req.content;
   }
 }

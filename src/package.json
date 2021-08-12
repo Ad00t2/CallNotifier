@@ -1,10 +1,10 @@
 {
   "name": "call-notifier",
   "productName": "CallNotifier",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Cross-platform desktop SIP client application built on electron-react-boilerplate.",
   "main": "./main.prod.js",
-  "author": "Ad00t",
+  "author": "LANgineers Inc.",
   "scripts": {
     "electron-rebuild": "node -r ../.erb/scripts/BabelRegister.js ../.erb/scripts/ElectronRebuild.js",
     "postinstall": "yarn electron-rebuild"
