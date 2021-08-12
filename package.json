@@ -1,10 +1,10 @@
 {
   "name": "call-notifier",
   "productName": "CallNotifier",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Cross-platform desktop SIP client application built on electron-react-boilerplate.",
   "repository": "https://github.com/Ad00t/CallNotifier",
-  "author": "Ad00t",
+  "author": "LANgineers Inc.",
   "scripts": {
     "build": "concurrently \"yarn build:main\" \"yarn build:renderer\"",
     "build:main": "cross-env NODE_ENV=production webpack --config ./.erb/configs/webpack.config.main.prod.babel.js",
@@ -34,7 +34,7 @@
   },
   "build": {
     "productName": "CallNotifier",
-    "appId": "com.adoot.callnotifier",
+    "appId": "com.langineers.callnotifier",
     "publish": "github",
     "files": [
       "dist/",
@@ -63,6 +63,7 @@
     },
     "nsis": {
       "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
       "license": "LICENSE"
     },
     "directories": {

@@ -143,7 +143,7 @@ export default function SipRegister({ sharedErrorMsg, setSharedErrorMsg }) {
                   <div id="regInputs">
                     <CustomInput
                       labelText="Domain"
-                      id="first"
+                      id="domain"
                       formControlProps={{ fullWidth: true }}
                       inputProps={{
                         type: "text",

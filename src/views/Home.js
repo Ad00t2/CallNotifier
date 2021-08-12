@@ -13,6 +13,7 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 // @material-ui/icons
 import CloudUpload from "@material-ui/icons/CloudUpload";
 import CloudDownload from "@material-ui/icons/CloudDownload";
+import OpenInBrowser from "@material-ui/icons/OpenInBrowser";
 
 // core components
 import Header from "../components/Header/Header";
@@ -25,6 +26,9 @@ import Card from "../components/Card/Card";
 import CardHeader from "../components/Card/CardHeader";
 import CardBody from "../components/Card/CardBody";
 import Muted from "../components/Typography/Muted";
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Switch from '@material-ui/core/Switch';
+import CustomInput from "../components/CustomInput/CustomInput";
 import ClipLoader from "react-spinners/ClipLoader";
 
 // styles
@@ -36,6 +40,7 @@ import { primaryColor, infoColor, successColor, roseColor, warningColor, dangerC
 
 // CallNotifier
 import * as SIP from "../sip/SIP";
+import * as config from "../config/config";
 
 function LogEntry({ entry, i }) {
   const pageClasses = makeStyles(pageStyles)();
@@ -108,6 +113,8 @@ export default function Home({}) {
   const history = useHistory();
 
   const [loading, setLoading] = useState(false);
+  const [showSipLog, setShowSipLog] = useState(false);
+  const [callURL, setCallURL] = useState(config.get('callURL'));
   const [sipLog, setSipLog] = useState([]);
 
   useEffect(() => {
@@ -135,7 +142,37 @@ export default function Home({}) {
     >
       <CardBody>
         <div id="topRow" style={{ display: "inline" }}>
+          <CustomInput
+            style={{ float: "left" }}
+            labelText="Call URL (<num> in place of calling number)"
+            id="callURL"
+            formControlProps={{ fullWidth: true }}
+            inputProps={{
+              type: "text",
+              endAdornment: (
+                <InputAdornment position="end">
+                  <OpenInBrowser className={pageClasses.inputIconsColor} />
+                </InputAdornment>
+              ),
+              value: callURL,
+              onChange: (e) => {
+                setCallURL(e.target.value);
+                config.set('callURL', e.target.value);
+              }
+            }}
+          />
           <Button size="sm" style={{ float: "right" }} onClick={() => unRegister()} color="primary">Unregister</Button>
+          <FormControlLabel
+            style={{ float: "right", marginRight: "2em" }}
+            control={
+              <Switch
+                checked={showSipLog}
+                onChange={(event) => setShowSipLog(event.target.checked)}
+                name="showSipLog"
+              />
+            }
+            label="Show SIP Log"
+          />
         </div>
         <div id="loader"
           style={{
@@ -158,10 +195,20 @@ export default function Home({}) {
               maxHeight: "75vh"
             }}
           >
-            {
+            { (showSipLog) ?
               sipLog.map((entry, i) => {
                 return (<LogEntry key={entry.id} entry={entry} i={sipLog.length - i} />);
               })
+              :
+              <h1
+                style={{
+                  margin: "25vh auto",
+                  textAlign: "center",
+                  color: "grey"
+                }}
+              >
+                Now listening for inbound calls.
+              </h1>
             }
           </div>
         }
