@@ -1,8 +1,5 @@
 /* eslint-disable */
 
-import { PictureInPictureAlt } from '@material-ui/icons'
-import { shell } from 'electron'
-
 import UserAgent from "./UserAgent";
 import * as ReqGen from "./RequestGenerator";
 
@@ -12,8 +9,7 @@ import * as config from "../config/config";
 
 const fs = require('fs');
 const randString = require('randomstring');
-const { remote } = require('electron');
-const mainWin = remote.getCurrentWindow();
+const { shell } = require('electron');
 
 var isStarted = false;
 var isRegistered = false;
@@ -176,13 +172,15 @@ export function setReRegisterInterval(pReRegisterInterval) {
   reRegisterInterval = pReRegisterInterval;
 }
 
-export function stop() {
+export function stop(restart) {
+  restart = restart || false;
   if (sipClient && isStarted) {
-    if (reRegisterInterval != null) {
+    if (!restart && reRegisterInterval != null) {
       clearInterval(reRegisterInterval);
       reRegisterInterval = null;
     }
     sipClient.stop();
+    sipClient = null;
     isStarted = false;
   }
 }

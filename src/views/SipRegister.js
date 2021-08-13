@@ -68,13 +68,17 @@ export default function SipRegister({ sharedErrorMsg, setSharedErrorMsg }) {
     SIP.setReRegisterInterval(
       setInterval(() => {
         if (SIP.getIsRegistered()) {
-          SIP.register((res) => {
-            if (res.status >= 300) {
-              SIP.setIsRegistered(false);
-              setSharedErrorMsg('Automatic SIP re-registration failed.\nPlease register manually.');
-              SIP.stop();
-              history.push('/');
-            }
+          SIP.stop(true);
+          const UA = SIP.getUA();
+          SIP.init(UA.domain, UA.user, UA.password, UA.protocol, () => {
+            SIP.register((res) => {
+              if (res.status >= 300) {
+                SIP.setIsRegistered(false);
+                setSharedErrorMsg('Automatic SIP re-registration failed.\nPlease register manually.');
+                SIP.stop();
+                history.push('/');
+              }
+            });
           });
         }
       }, Math.round((5.0 / 6) * expiresMs))
