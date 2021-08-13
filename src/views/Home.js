@@ -175,7 +175,7 @@ export default function Home({}) {
                 name="openInBackground"
               />
             }
-            label="Open Call Link in Background"
+            label="Open Call Link in Background (restart required)"
           />
           <FormControlLabel
             style={{ float: "left" }}
@@ -207,7 +207,7 @@ export default function Home({}) {
               margin: "5em auto",
               overflow: "auto",
               width: "70vw",
-              maxHeight: "75vh"
+              maxHeight: "72vh"
             }}
           >
             { (showSipLog) ?

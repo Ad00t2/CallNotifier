@@ -85,9 +85,10 @@ const createWindow = async () => {
     },
   });
   mainWindow.loadURL(`file://${__dirname}/index.html`);
-  mainWindow.setVisibleOnAllWorkspaces(true);
-  if (config.get('openInBackground'))
+  if (config.get('openInBackground')) {
     mainWindow.setAlwaysOnTop(true, "normal");
+    mainWindow.setVisibleOnAllWorkspaces(true);
+  }
 
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) throw new Error('"mainWindow" is not defined');
