@@ -12,6 +12,8 @@ import * as config from "../config/config";
 
 const fs = require('fs');
 const randString = require('randomstring');
+const { remote } = require('electron');
+const mainWin = remote.getCurrentWindow();
 
 var isStarted = false;
 var isRegistered = false;
@@ -27,11 +29,11 @@ const sipLog = [];
 // arc2.langineers.com
 // langineerstest.com
 
-function onBye(req, remote) {
+function onBye(req, rem) {
   sipClient.send(sip.makeResponse(req, 200, 'OK'));
 }
 
-function onCancel(req, remote) {
+function onCancel(req, rem) {
   sipClient.send(
     ReqGen.createReq({
       method: 'NOTIFY',
@@ -43,14 +45,13 @@ function onCancel(req, remote) {
 }
 
 var lastInviteContent = ''
-function onInvite(req, remote) {
+function onInvite(req, rem) {
   sipClient.send(sip.makeResponse(req, 100, 'TRYING'));
   sipClient.send(sip.makeResponse(req, 486, 'BUSY HERE'));
   if (req.content !== lastInviteContent) {
     const parsedURI = sip.parseUri(req.headers.from.uri);
     const link = config.get('callURL').replace('<num>', parsedURI.user);
-    console.log(link);
-    shell.openExternal(link);
+    shell.openExternal(link, { activate: !config.get('openInBackground') });
     lastInviteContent = req.content;
   }
 }
@@ -73,16 +74,16 @@ export function setSipLogCallback(callback) {
 }
 
 function create(options) {
-  sipClient = sip.create(options, (req, remote) => {
+  sipClient = sip.create(options, (req, rem) => {
     switch (req.method) {
       case 'BYE':
-        onBye(req, remote);
+        onBye(req, rem);
         break;
       case 'CANCEL':
-        onCancel(req, remote);
+        onCancel(req, rem);
         break;
       case 'INVITE':
-        onInvite(req, remote);
+        onInvite(req, rem);
         break;
       default:
         break;

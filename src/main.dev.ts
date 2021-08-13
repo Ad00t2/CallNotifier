@@ -16,7 +16,7 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import Store from 'electron-store';
 
-import * as SIP from "./sip/SIP";
+import * as config from './config/config';
 
 Store.initRenderer();
 
@@ -80,13 +80,15 @@ const createWindow = async () => {
     autoHideMenuBar: true,
     webPreferences: {
       devTools: true,
-      nodeIntegration: true
+      nodeIntegration: true,
+      enableRemoteModule: true
     },
   });
   mainWindow.loadURL(`file://${__dirname}/index.html`);
+  mainWindow.setVisibleOnAllWorkspaces(true);
+  if (config.get('openInBackground'))
+    mainWindow.setAlwaysOnTop(true, "normal");
 
-  // @TODO: Use 'ready-to-show' event
-  //        https://github.com/electron/electron/blob/master/docs/api/browser-window.md#using-ready-to-show-event
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) throw new Error('"mainWindow" is not defined');
     Store.initRenderer();
@@ -95,7 +97,7 @@ const createWindow = async () => {
   });
 
   mainWindow.on('close', () => {
-    SIP.stop();
+
   });
 
   mainWindow.on('closed', () => {
@@ -118,11 +120,7 @@ const createWindow = async () => {
  */
 
 app.on('window-all-closed', () => {
-  // Respect the OSX convention of having the application in memory even
-  // after all windows have been closed
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+  app.quit();
 });
 
 app.whenReady().then(createWindow).catch(console.log);
