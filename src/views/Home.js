@@ -115,6 +115,7 @@ export default function Home({}) {
   const [loading, setLoading] = useState(false);
   const [showSipLog, setShowSipLog] = useState(false);
   const [callURL, setCallURL] = useState(config.get('callURL'));
+  const [openInBackground, setOpenInBackground] = useState(config.get('openInBackground'));
   const [sipLog, setSipLog] = useState([]);
 
   useEffect(() => {
@@ -163,7 +164,21 @@ export default function Home({}) {
           />
           <Button size="sm" style={{ float: "right" }} onClick={() => unRegister()} color="primary">Unregister</Button>
           <FormControlLabel
-            style={{ float: "right", marginRight: "2em" }}
+            style={{ float: "left", marginRight: "1.5em" }}
+            control={
+              <Switch
+                checked={openInBackground}
+                onChange={(e) => {
+                  setOpenInBackground(e.target.checked);
+                  config.set('openInBackground', e.target.checked);
+                }}
+                name="openInBackground"
+              />
+            }
+            label="Open Call Link in Background"
+          />
+          <FormControlLabel
+            style={{ float: "left" }}
             control={
               <Switch
                 checked={showSipLog}

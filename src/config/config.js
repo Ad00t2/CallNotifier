@@ -10,14 +10,16 @@ const store = new Store({
     user: { type: 'string' },
     password: { type: 'string' },
     protocol: { type: 'string' },
-    callURL: { type: 'string' }
+    callURL: { type: 'string' },
+    openInBackground: { type: 'boolean' }
   },
   defaults: {
     domain: '',
     user: '',
     password: '',
     protocol: 'UDP',
-    callURL: 'http://support.langineers.com:8091/?tnum=<num>'
+    callURL: 'http://support.langineers.com:8091/?tnum=<num>',
+    openInBackground: true
   }
 });
 
