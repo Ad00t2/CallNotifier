@@ -7,8 +7,6 @@ import './App.global.css';
 import SipRegister from './views/SipRegister';
 import Home from './views/Home';
 
-import * as SIP from './sip/SIP';
-
 const App = () => {
 
   const [sharedErrorMsg, setSharedErrorMsg] = useState('');

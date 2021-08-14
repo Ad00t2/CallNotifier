@@ -15,7 +15,6 @@ import { app, BrowserWindow, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import Store from 'electron-store';
-
 import * as config from './config/config';
 
 Store.initRenderer();
@@ -92,13 +91,8 @@ const createWindow = async () => {
 
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) throw new Error('"mainWindow" is not defined');
-    Store.initRenderer();
     mainWindow.show();
     mainWindow.focus();
-  });
-
-  mainWindow.on('close', () => {
-
   });
 
   mainWindow.on('closed', () => {
@@ -127,7 +121,5 @@ app.on('window-all-closed', () => {
 app.whenReady().then(createWindow).catch(console.log);
 
 app.on('activate', () => {
-  // On macOS it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  if (mainWindow === null) createWindow();
+  if (mainWindow == null) createWindow();
 });
